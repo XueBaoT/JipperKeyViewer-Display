@@ -8,8 +8,6 @@
 
 [简体中文](README.md) | [English](README-English.md) | [한국어](README-Korean.md)
 
----
-
 ## 目录
 
 - [环境与运行](#环境与运行)
