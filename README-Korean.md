@@ -6,6 +6,8 @@ JipperKeyViewer Display는 **A Dance of Fire and Ice**의 서드파티 모드를
 
 **방송**, **녹화** 또는 **게임 오버레이**에 사용할 간단하고 편리하면서도 다기능인 키 표시 프로그램이 필요하다면, 필요한 기능을 여기에서 모두 찾을 수 있습니다!
 
+[简体中文](README.md) | [English](README-English.md) | [한국어](README-Korean.md)
+
 ## 목차
 
 - [시스템 요구 사항 및 실행](#시스템-요구-사항-및-실행)
