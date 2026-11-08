@@ -6,6 +6,8 @@ JipperKeyViewer Display is a key-mapping display application based on a rebuilt 
 
 If you need a simple, easy-to-use, and versatile key display for **streaming**, **recording**, or an **in-game overlay**, everything you need is here!
 
+[简体中文](README.md) | [English](README-English.md) | [한국어](README-Korean.md)
+
 ## Table of Contents
 
 - [System Requirements and Running the Program](#system-requirements-and-running-the-program)
