@@ -1,0 +1,324 @@
+﻿<Window x:Class="JipperKeyViewer.UI.ColorPickerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="颜色" Height="610" Width="500" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" Background="{DynamicResource Bg}"
+        FontFamily="Microsoft YaHei" Foreground="{DynamicResource Text}"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display">
+    <Window.Resources>
+        <!-- 色板（与设置窗同键名；运行时由 AppTheme.ApplyPalette 按系统亮/暗模式填充） -->
+        <SolidColorBrush x:Key="Bg" Color="#16181A"/>
+        <SolidColorBrush x:Key="Panel" Color="#202225"/>
+        <SolidColorBrush x:Key="Panel2" Color="#232529"/>
+        <SolidColorBrush x:Key="Ctrl" Color="#2F3235"/>
+        <SolidColorBrush x:Key="CtrlH" Color="#3A3D41"/>
+        <SolidColorBrush x:Key="Line" Color="#3A3D41"/>
+        <SolidColorBrush x:Key="Line2" Color="#45484D"/>
+        <SolidColorBrush x:Key="Text" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="Dim" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="Alias" Color="#9AA0A6"/>
+        <SolidColorBrush x:Key="Acc" Color="#4A90D9"/>
+        <SolidColorBrush x:Key="AccH" Color="#3D6EA5"/>
+        <SolidColorBrush x:Key="Sel" Color="#36587F"/>
+        <SolidColorBrush x:Key="Red" Color="#E06060"/>
+        <SolidColorBrush x:Key="Green" Color="#6FBF73"/>
+        <SolidColorBrush x:Key="BodyBg" Color="#1C1E21"/>
+        <Style x:Key="CPLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource Alias}"/>
+            <Setter Property="Width" Value="86"/>
+        </Style>
+        <Style x:Key="CPBox" TargetType="TextBox">
+            <Setter Property="Width" Value="58"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{DynamicResource Panel}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Line2}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource Text}"/>
+        </Style>
+        <Style x:Key="SpinBtn" TargetType="RepeatButton">
+            <Setter Property="Width" Value="22"/>
+            <Setter Property="Height" Value="12"/>
+            <Setter Property="Foreground" Value="#D0D3D8"/>
+            <Setter Property="Background" Value="{DynamicResource Ctrl}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Line2}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="8"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- 暗色按钮：默认 WPF 主题模板会用系统亮色 chrome（亮色模式下白底），因此重写模板 -->
+        <Style x:Key="CPButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource Text}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" CornerRadius="4"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.86"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.72"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 暗色滑杆：默认模板在亮色模式下是浅灰轨道 + 白色滑块 -->
+        <Style x:Key="CPSlider" TargetType="Slider">
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid VerticalAlignment="Center" Height="20">
+                            <Border Height="4" CornerRadius="2" Background="{DynamicResource Line}" VerticalAlignment="Center"/>
+                            <Track x:Name="PART_Track">
+                                <Track.Thumb>
+                                    <Thumb Width="14" Height="14" Cursor="Hand">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Ellipse Fill="{DynamicResource Acc}" Stroke="{DynamicResource Acc}" StrokeThickness="1"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- 暗色 ComboBox：默认 WPF 模板忽略 Background/Foreground（白底白字），重写模板 -->
+        <Style x:Key="DarkCombo" TargetType="ComboBox">
+            <Setter Property="Foreground" Value="{DynamicResource Text}"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleBtn" Focusable="False" ClickMode="Press" Foreground="{DynamicResource Text}"
+                                          IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="bd" Background="{DynamicResource Panel}" BorderBrush="{DynamicResource Line2}"
+                                                BorderThickness="1" CornerRadius="3">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"
+                                                                  Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                                  ContentTemplate="{Binding SelectionBoxItemTemplate, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
+                                                <Path Grid.Column="1" Data="M 0,0 L 6,0 L 3,3 Z" Fill="{DynamicResource Alias}"
+                                                      Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                            </Grid>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource Ctrl}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="bd" Property="BorderBrush" Value="#4A90D9"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <Popup x:Name="PART_Popup" Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True" PopupAnimation="Slide" StaysOpen="False">
+                                <Border Background="{DynamicResource Panel}" BorderBrush="{DynamicResource Line2}" BorderThickness="1" CornerRadius="3"
+                                        MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                        Margin="0,2,0,0">
+                                    <ScrollViewer MaxHeight="{TemplateBinding MaxDropDownHeight}" CanContentScroll="True">
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="Foreground" Value="{DynamicResource Text}"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ComboBoxItem">
+                                    <Border x:Name="it" Background="Transparent" Padding="8,4">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsHighlighted" Value="True">
+                                            <Setter TargetName="it" Property="Background" Value="{DynamicResource AccH}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- ===== 图二排版：左=色域+控制项（左上大色域、左下标示/数值/Hex/透明度），右=确定/取消(顶)+新增/当前(底) ===== -->
+    <Grid Margin="14">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="104"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左列：色域 + 亮度条 + 控制项 -->
+        <Grid Grid.Column="0" Margin="0,0,14,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="300"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="颜色(C):" FontSize="13" Foreground="{DynamicResource Alias}" Margin="0,0,0,4"/>
+
+            <!-- 色域（左）+ 亮度条（右），色域固定全亮显示 -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="26"/>
+                </Grid.ColumnDefinitions>
+                <Border BorderBrush="{DynamicResource Line2}" BorderThickness="1">
+                    <Grid>
+                        <Image x:Name="svImage" Stretch="Fill" Cursor="Cross"
+                               MouseLeftButtonDown="SvMouseDown" MouseMove="SvMouseMove" MouseLeftButtonUp="SvMouseUp"/>
+                        <Canvas x:Name="svCanvas">
+                            <Ellipse x:Name="svMarker" Width="13" Height="13" Stroke="#FFFFFF" StrokeThickness="2"
+                                     Fill="Transparent" IsHitTestVisible="False" StrokeDashArray="1,1"/>
+                        </Canvas>
+                    </Grid>
+                </Border>
+                <Border Grid.Column="1" BorderBrush="{DynamicResource Line2}" BorderThickness="1" Margin="8,0,0,0">
+                    <Grid>
+                        <Image x:Name="vImage" Stretch="Fill" Cursor="Hand"
+                               MouseLeftButtonDown="VMouseDown" MouseMove="VMouseMove" MouseLeftButtonUp="VMouseUp"/>
+                        <Canvas>
+                            <Border x:Name="vMarker" Width="26" Height="3" Background="#FFFFFF" BorderBrush="#000000"
+                                    BorderThickness="1" IsHitTestVisible="False"/>
+                        </Canvas>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- 颜色模式 -->
+            <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,10,0,0">
+                <TextBlock Text="颜色模式(D):" Style="{StaticResource CPLabel}"/>
+                <ComboBox x:Name="cmbMode" Style="{StaticResource DarkCombo}" Width="110" SelectionChanged="ModeChanged">
+                    <ComboBoxItem Content="RGB"/>
+                    <ComboBoxItem Content="HSL"/>
+                </ComboBox>
+            </StackPanel>
+
+            <!-- 红色 -->
+            <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="0,8,0,0">
+                <TextBlock x:Name="lbl1" Text="红色(R):" Style="{StaticResource CPLabel}"/>
+                <TextBox x:Name="txt1" Style="{StaticResource CPBox}" KeyDown="NumKeyDown" LostFocus="NumLostFocus" Tag="1"/>
+                <StackPanel Margin="4,0,0,0">
+                    <RepeatButton Style="{StaticResource SpinBtn}" Content="▲" Tag="1+" Click="SpinClick"/>
+                    <RepeatButton Style="{StaticResource SpinBtn}" Content="▼" Tag="1-" Click="SpinClick" Margin="0,1,0,0"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- 绿色 -->
+            <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="0,8,0,0">
+                <TextBlock x:Name="lbl2" Text="绿色(G):" Style="{StaticResource CPLabel}"/>
+                <TextBox x:Name="txt2" Style="{StaticResource CPBox}" KeyDown="NumKeyDown" LostFocus="NumLostFocus" Tag="2"/>
+                <StackPanel Margin="4,0,0,0">
+                    <RepeatButton Style="{StaticResource SpinBtn}" Content="▲" Tag="2+" Click="SpinClick"/>
+                    <RepeatButton Style="{StaticResource SpinBtn}" Content="▼" Tag="2-" Click="SpinClick" Margin="0,1,0,0"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- 蓝色 -->
+            <StackPanel Orientation="Horizontal" Grid.Row="5" Margin="0,8,0,0">
+                <TextBlock x:Name="lbl3" Text="蓝色(B):" Style="{StaticResource CPLabel}"/>
+                <TextBox x:Name="txt3" Style="{StaticResource CPBox}" KeyDown="NumKeyDown" LostFocus="NumLostFocus" Tag="3"/>
+                <StackPanel Margin="4,0,0,0">
+                    <RepeatButton Style="{StaticResource SpinBtn}" Content="▲" Tag="3+" Click="SpinClick"/>
+                    <RepeatButton Style="{StaticResource SpinBtn}" Content="▼" Tag="3-" Click="SpinClick" Margin="0,1,0,0"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- 十六进制 -->
+            <StackPanel Orientation="Horizontal" Grid.Row="6" Margin="0,8,0,0">
+                <TextBlock Text="十六进制(H):" Style="{StaticResource CPLabel}"/>
+                <TextBox x:Name="txtHex" Width="120" Height="24" VerticalContentAlignment="Center"
+                         FontFamily="Consolas" Background="{DynamicResource Panel}" BorderBrush="{DynamicResource Line2}" BorderThickness="1"
+                         Foreground="{DynamicResource Text}" CaretBrush="{DynamicResource Text}" KeyDown="HexKeyDown" LostFocus="HexLostFocus"/>
+            </StackPanel>
+
+            <!-- 透明度 -->
+            <StackPanel Orientation="Horizontal" Grid.Row="7" Margin="0,10,0,0">
+                <TextBlock Text="透明度(T):" Style="{StaticResource CPLabel}"/>
+                <Slider x:Name="sldAlpha" Style="{StaticResource CPSlider}" Width="110" Minimum="0" Maximum="100" ValueChanged="AlphaChanged" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtAlphaPct" Width="46" Height="24" Margin="8,0,0,0" VerticalContentAlignment="Center"
+                         HorizontalContentAlignment="Center" Text="100" Background="{DynamicResource Panel}" BorderBrush="{DynamicResource Line2}"
+                         BorderThickness="1" Foreground="{DynamicResource Text}" CaretBrush="{DynamicResource Text}" KeyDown="AlphaPctKeyDown" LostFocus="AlphaPctLostFocus"/>
+                <TextBlock Text="%" Foreground="{DynamicResource Alias}" VerticalAlignment="Center" Margin="2,0,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- 右列：顶部确定/取消（竖排）、底部新增/当前预览（竖排） -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" HorizontalAlignment="Right">
+                <Button x:Name="btnOk" Content="确定" Style="{StaticResource CPButton}" MinWidth="76" Height="28" Click="OkClick"
+                        Background="{DynamicResource AccH}" Foreground="{DynamicResource Text}" BorderBrush="{DynamicResource Acc}" BorderThickness="1" Cursor="Hand"/>
+                <Button x:Name="btnCancel" Content="取消" Style="{StaticResource CPButton}" MinWidth="76" Height="28" Margin="0,8,0,0" Click="CancelClick"
+                        Background="{DynamicResource Ctrl}" Foreground="{DynamicResource Text}" BorderBrush="{DynamicResource Line2}" BorderThickness="1" Cursor="Hand"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" HorizontalAlignment="Center">
+                <Border x:Name="swNew" Width="70" Height="40" BorderBrush="{DynamicResource Line2}" BorderThickness="1" CornerRadius="3"/>
+                <TextBlock Text="新增" FontSize="11" Foreground="{DynamicResource Alias}" HorizontalAlignment="Center" Margin="0,3,0,0"/>
+                <Border x:Name="swCurrent" Width="70" Height="40" BorderBrush="{DynamicResource Line2}" BorderThickness="1" CornerRadius="3" Margin="0,12,0,0"/>
+                <TextBlock Text="当前" FontSize="11" Foreground="{DynamicResource Alias}" HorizontalAlignment="Center" Margin="0,3,0,0"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
+
+
+
+
